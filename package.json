@@ -1,0 +1,18 @@
+{
+  "name": "brainfuck-arena",
+  "version": "1.0.0",
+  "description": "Tic-Tac-Toe benchmark arena for AI engines written entirely in Brainfuck",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "repository": "github:inds-space/brainfuck-arena",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node server.js",
+    "bench": "node cli/bench.js",
+    "test": "node --test \"test/*.test.js\" \"benchmarks/*/source/*.test.js\"",
+    "build:engine": "node benchmarks/claude-opus-5.5/source/engine-gen.js",
+    "build:site": "node cli/build-site.js",
+    "deploy": "npm run build:site && cf deploy --prebuilt"
+  }
+}

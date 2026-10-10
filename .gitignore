@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.wrangler/
+.cloudflare/
+.env*
+*.log
+.DS_Store
