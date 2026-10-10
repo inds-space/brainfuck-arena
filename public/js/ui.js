@@ -97,7 +97,7 @@ export const fmt = {
   int: (n) => (n ?? 0).toLocaleString('en-US'),
   compact: (n) => Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(n ?? 0),
   pct: (n) => `${(n ?? 0).toFixed(1)}%`,
-  ms: (n) => (n >= 1000 ? `${(n / 1000).toFixed(1)} s` : `${Math.round(n)} ms`),
+  ms: (n) => (n >= 1000 ? `${(n / 1000).toFixed(1)} s` : n < 1 ? '<1 ms' : `${Math.round(n)} ms`),
   date: (s) => new Date(s).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
   bytes: (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(2)} MB` : n >= 1024 ? `${(n / 1024).toFixed(1)} KB` : `${n} B`),
 };
