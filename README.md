@@ -17,7 +17,7 @@ Every entry gets two ratings:
 
 | Entry | Official | Score | Ind's tier | Forced win in 5 | Fork defense | Matches W/D/L | Avg / max instructions per move |
 |---|---|---|---|---|---|---|---|
-| [Claude Opus 5.5](benchmarks/claude-opus-5.5) | **S** | 94.8 | not rated yet | 30/30 | 30/30 | 12/12/0 | 8.6 M / 45.0 M |
+| [Claude Opus 5.5](benchmarks/claude-opus-5.5) | **S** | 94.8 | **S+** | 30/30 | 30/30 | 12/12/0 | 8.6 M / 45.0 M |
 
 The table shows seed 20261009, suite v1. The live table is at [/benchmark](https://brainfuck-arena.inds.space/benchmark).
 
