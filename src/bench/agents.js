@@ -1,6 +1,6 @@
 // Entry registry: every folder in benchmarks/ with an engine.bf is an entry.
 //   benchmarks/<id>/engine.bf    the Brainfuck program
-//   benchmarks/<id>/entry.json   name, model, provider, ... and Ind's tier
+//   benchmarks/<id>/entry.json   name, model, provider, harness, date, ...
 //   benchmarks/<id>/results/     official benchmark results (see store.js)
 
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
@@ -21,7 +21,7 @@ function describe(id) {
   const source = readFileSync(path, 'utf8');
   const meta = existsSync(join(dir, 'entry.json')) ? JSON.parse(readFileSync(join(dir, 'entry.json'), 'utf8')) : {};
   return {
-    name: id, description: '', indTier: null, indNote: null, ...meta, id,
+    name: id, description: '', ...meta, id,
     file: `benchmarks/${id}/engine.bf`, bytes: source.length,
     commands: source.replace(/[^+\-<>[\].,]/g, '').length, sha256: sha(source), updatedAt: statSync(path).mtime.toISOString(),
   };

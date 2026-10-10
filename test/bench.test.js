@@ -8,7 +8,7 @@ import { join } from 'node:path';
 const bench = process.env.ARENA_BENCHMARKS = mkdtempSync(join(tmpdir(), 'arena-'));
 mkdirSync(join(bench, 'first-empty'));
 copyFileSync(new URL('./fixtures/first-empty.bf', import.meta.url), join(bench, 'first-empty', 'engine.bf'));
-writeFileSync(join(bench, 'first-empty', 'entry.json'), JSON.stringify({ name: 'First Empty', indTier: 'F', indNote: 'fixture' }));
+writeFileSync(join(bench, 'first-empty', 'entry.json'), JSON.stringify({ name: 'First Empty', provider: 'fixture' }));
 const { summarize, gradeFor, matchPoints } = await import('../src/core/grading.js');
 const { runBenchmark, agentMove } = await import('../src/bench/runner.js');
 const { saveResult, loadResult, listResults, leaderboard, deleteResult } = await import('../src/bench/store.js');
@@ -85,7 +85,7 @@ test('entries are the folders in benchmarks/', () => {
   const list = listAgents();
   assert.deepEqual(list.map((a) => a.id), ['first-empty']);
   assert.equal(list[0].name, 'First Empty');
-  assert.equal(list[0].indTier, 'F');
+  assert.equal(list[0].provider, 'fixture');
   assert.match(list[0].sha256, /^[0-9a-f]{64}$/);
   assert.equal(loadAgent('../first-empty'), null);
 });

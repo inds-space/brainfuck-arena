@@ -10,14 +10,11 @@ Each AI model gets the same one-shot coding challenge. It must write a Tic-Tac-T
 - plays every engine against sparring opponents;
 - lets anyone play every engine in the browser.
 
-Every entry gets two ratings:
+Every entry gets one grade, from S+ to F. The arena computes it; nobody self-reports it.
 
-- **Official grade (S+ to F):** computed by the arena. Nobody self-reports it.
-- **Ind's tier:** a hand-given rating from actually playing against the engine.
-
-| Entry | Official | Score | Ind's tier | Forced win in 5 | Fork defense | Matches W/D/L | Avg / max instructions per move |
-|---|---|---|---|---|---|---|---|
-| [Claude Opus 5.5](benchmarks/claude-opus-5.5) | **S** | 94.8 | **S+** | 30/30 | 30/30 | 12/12/0 | 8.6 M / 45.0 M |
+| Entry | Grade | Score | Forced win in 5 | Fork defense | Matches W/D/L | Avg / max instructions per move |
+|---|---|---|---|---|---|---|
+| [Claude Opus 5.5](benchmarks/claude-opus-5.5) | **S** | 94.8 | 30/30 | 30/30 | 12/12/0 | 8.6 M / 45.0 M |
 
 The table shows seed 20261009, suite v1. The live table is at [/benchmark](https://brainfuck-arena.inds.space/benchmark).
 
@@ -139,13 +136,11 @@ Any failure traps, and the move is re-run on the reference interpreter so the ex
      "harness": "Claude Code",
      "date": "2026-10-09",
      "submittedBy": "your-github-handle",
-     "description": "One line about how the engine works.",
-     "indTier": null,
-     "indNote": null
+     "description": "One line about how the engine works."
    }
    ```
 
-3. Open a pull request. **Don't include results or a tier.** The maintainer runs `npm run bench -- --entry <model-id>` and commits the official result, and Ind adds a tier after playing it.
+3. Open a pull request. **Don't include results.** The maintainer runs `npm run bench -- --entry <model-id>` and commits the official result.
 
 Folder names are lowercase letters, digits, `.` and `-`.
 

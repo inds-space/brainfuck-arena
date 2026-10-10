@@ -412,38 +412,28 @@ async function compareView(q) {
 // ---------------------------------------------------------------- tier list
 const TIERS = ['S+', 'S', 'A', 'B', 'C', 'D', 'F'];
 
-async function tierView(q) {
+async function tierView() {
   const [agents, board] = await Promise.all([api('/api/agents'), api('/api/leaderboard')]);
   const official = new Map(board.map((r) => [r.agent.id, r]));
-  let mode = q.get('by') === 'ind' ? 'ind' : 'official';
-  const rowsEl = h('div', { class: 'tier-list' });
-  const chips = h('div', { class: 'row', style: { gap: '6px' } });
   const chip = (e) => {
     const r = official.get(e.id);
     return h('a', { class: 'tier-chip', href: r ? `/#/results/${r.id}` : `/#/agents` }, h('b', {}, e.name), r ? h('span', { class: 'num muted' }, r.summary.score.toFixed(1)) : null);
   };
-  const draw = () => {
-    for (const c of chips.children) c.classList.toggle('on', c.dataset.k === mode);
-    const tierOf = (e) => (mode === 'ind' ? (TIERS.includes(e.indTier) ? e.indTier : null) : official.get(e.id)?.summary.grade || null);
-    const rows = TIERS.map((t) => [t, agents.filter((e) => tierOf(e) === t)]);
-    const rest = agents.filter((e) => !tierOf(e));
-    put(rowsEl,
-      rows.map(([t, list]) => h('div', { class: 'tier-row' }, gradeEl(t, true), h('div', { class: 'tier-items' }, list.length ? list.map(chip) : h('span', { class: 'faint small' }, '—')))),
-      rest.length ? h('div', { class: 'tier-row' }, h('span', { class: 'grade lg', 'data-g': '?' }, '?'), h('div', { class: 'tier-items' }, rest.map(chip), h('span', { class: 'faint small' }, mode === 'ind' ? 'not rated by Ind yet' : 'no official run yet'))) : null);
-  };
-  for (const [k, label] of [['official', 'Official grade'], ['ind', "Ind's tier"]]) chips.append(h('button', { class: 'chip', 'data-k': k, onclick: () => { mode = k; draw(); } }, label));
-  draw();
+  const gradeOf = (e) => official.get(e.id)?.summary.grade || null;
+  const unrated = agents.filter((e) => !gradeOf(e));
+  const tiers = h('div', { class: 'tier-list' },
+    TIERS.map((t) => { const list = agents.filter((e) => gradeOf(e) === t); return h('div', { class: 'tier-row' }, gradeEl(t, true), h('div', { class: 'tier-items' }, list.length ? list.map(chip) : h('span', { class: 'faint small' }, '—'))); }),
+    unrated.length ? h('div', { class: 'tier-row' }, h('span', { class: 'grade lg', 'data-g': '?' }, '?'), h('div', { class: 'tier-items' }, unrated.map(chip), h('span', { class: 'faint small' }, 'no official run yet'))) : null);
 
   const cats = Object.keys(meta.weights).filter((c) => c !== 'match');
   const table = h('div', { class: 'card flush' }, h('div', { class: 'table-wrap' }, h('table', { class: 't' },
-    h('thead', {}, h('tr', {}, h('th', {}, 'Entry'), h('th', {}, 'Official'), h('th', { class: 'num' }, 'Score'), h('th', {}, "Ind's tier"), cats.map((c) => h('th', { class: 'num hide-sm' }, catLabel(c))), h('th', { class: 'num' }, 'W/D/L'), h('th', { class: 'num hide-sm' }, 'Avg instr.'), h('th', {}))),
+    h('thead', {}, h('tr', {}, h('th', {}, 'Entry'), h('th', {}, 'Grade'), h('th', { class: 'num' }, 'Score'), cats.map((c) => h('th', { class: 'num hide-sm' }, catLabel(c))), h('th', { class: 'num' }, 'W/D/L'), h('th', { class: 'num hide-sm' }, 'Avg instr.'), h('th', {}))),
     h('tbody', {}, [...agents].sort((x, y) => (official.get(y.id)?.summary.score ?? -1) - (official.get(x.id)?.summary.score ?? -1)).map((e) => {
       const r = official.get(e.id), s = r?.summary;
       return h('tr', {},
         h('td', { class: 'nowrap' }, h('div', { style: { fontWeight: 600 } }, e.name), h('div', { class: 'faint small' }, [e.provider, e.harness].filter(Boolean).join(' · '))),
         h('td', {}, s ? gradeEl(s.grade) : h('span', { class: 'faint' }, '—')),
         h('td', { class: 'num' }, s ? h('b', {}, s.score.toFixed(1)) : '—'),
-        h('td', {}, TIERS.includes(e.indTier) ? h('div', { class: 'row', style: { gap: '8px', flexWrap: 'nowrap' } }, gradeEl(e.indTier), e.indNote ? h('span', { class: 'muted small' }, e.indNote) : null) : h('span', { class: 'faint small' }, 'not rated yet')),
         cats.map((c) => h('td', { class: 'num hide-sm' }, s?.categories[c] ? fmt.pct(s.categories[c].pct) : '—')),
         h('td', { class: 'num' }, s ? `${s.matchRecord.win}/${s.matchRecord.draw}/${s.matchRecord.loss}` : '—'),
         h('td', { class: 'num hide-sm' }, s ? fmt.compact(s.instructions.avg) : '—'),
@@ -451,15 +441,16 @@ async function tierView(q) {
     })))));
 
   put(view,
-    pageHead('Benchmark', 'The official (informal, slop) Brainfuck Arena benchmark: Tic-Tac-Toe engines written by AI models in pure Brainfuck.', chips),
-    h('div', { class: 'card', style: { marginBottom: '16px' } }, rowsEl),
+    pageHead('Benchmark', 'The official (informal, slop) Brainfuck Arena benchmark: Tic-Tac-Toe engines written by AI models in pure Brainfuck.'),
+    h('div', { class: 'card', style: { marginBottom: '16px' } }, tiers),
     table,
     h('div', { class: 'grid g2', style: { marginTop: '16px' } },
-      h('div', { class: 'card' }, h('h2', {}, 'Two ratings'),
-        h('p', { class: 'muted' }, h('b', {}, 'Official grade'), ` is computed by the deterministic suite on seed ${meta.defaultSeed}: ${Object.values(meta.categories).length} categories of exactly-solved positions plus 24 full matches, weighted into a 0–100 score. Any illegal move caps it at ${meta.capOnIllegal}.`),
-        h('p', { class: 'muted', style: { marginBottom: 0 } }, h('b', {}, "Ind's tier"), ' is a hand-given rating from playing against the engine. Vibes, but informed vibes.')),
+      h('div', { class: 'card' }, h('h2', {}, 'How grades work'),
+        h('p', { class: 'muted' }, `Every entry runs the same deterministic suite on seed ${meta.defaultSeed}: ${Object.values(meta.categories).length} categories of positions with answers computed by brute-force search, plus 24 full matches. Accuracy is weighted into a 0–100 score.`),
+        h('div', { class: 'row', style: { gap: '6px', marginBottom: '10px' } }, meta.grades.map(([g, min]) => h('span', { class: 'row', style: { gap: '4px' } }, gradeEl(g), h('span', { class: 'muted small' }, `≥${min}`)))),
+        h('p', { class: 'muted', style: { marginBottom: 0 } }, `One illegal move or crash caps the grade at ${meta.capOnIllegal}. Scores are never self-reported.`)),
       h('div', { class: 'card' }, h('h2', {}, 'Add a model'),
-        h('p', { class: 'muted' }, 'Give a model the one-shot challenge, then open a pull request adding ', h('code', {}, 'benchmarks/<model>/engine.bf'), ' and ', h('code', {}, 'entry.json'), '. The official grade is always computed by the arena, never self-reported.'),
+        h('p', { class: 'muted' }, 'Give a model the one-shot challenge, then open a pull request adding ', h('code', {}, 'benchmarks/<model>/engine.bf'), ' and ', h('code', {}, 'entry.json'), '. The grade is always computed by the arena.'),
         h('a', { class: 'btn sm', href: `${REPO}#submit-an-entry`, target: '_blank', rel: 'noopener' }, 'How to submit →'))));
 }
 
@@ -468,7 +459,7 @@ async function agentsView() {
   const agents = await api('/api/agents');
   put(view, pageHead('Entries', 'Each entry is a Brainfuck program written by an AI model, in benchmarks/<model>/.', h('a', { class: 'btn', href: `${REPO}#submit-an-entry`, target: '_blank', rel: 'noopener' }, 'Submit an entry')),
     h('div', { class: 'grid g2' }, agents.map((a) => h('div', { class: 'card' },
-      h('div', { class: 'card-head' }, h('div', {}, h('h2', { style: { margin: 0 } }, a.name), h('div', { class: 'faint small mono' }, a.file)), TIERS.includes(a.indTier) ? h('span', { class: 'row', style: { gap: '6px' } }, h('span', { class: 'muted small' }, "Ind's tier"), gradeEl(a.indTier)) : null),
+      h('div', { class: 'card-head' }, h('div', {}, h('h2', { style: { margin: 0 } }, a.name), h('div', { class: 'faint small mono' }, a.file))),
       h('p', { class: 'muted' }, a.description),
       h('dl', { class: 'kv', style: { marginBottom: '12px' } },
         a.model ? [h('dt', {}, 'Model'), h('dd', { class: 'mono' }, a.model)] : null,
